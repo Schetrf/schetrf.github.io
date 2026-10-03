@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Иллюстрированный аватар (не фото реального человека)">
+  <title>Иллюстрированный аватар — демо</title>
+  <defs>
+    <linearGradient id="av-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dbe6ff"/><stop offset="1" stop-color="#cdeeed"/></linearGradient>
+    <clipPath id="av-clip"><rect width="120" height="120" rx="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#av-clip)">
+    <rect width="120" height="120" fill="url(#av-bg)"/>
+    <!-- shoulders / jacket -->
+    <path d="M14 124c2-24 20-36 46-36s44 12 46 36z" fill="#1e3a8a"/>
+    <path d="M48 89l12 16 12-16" fill="#ffffff"/>
+    <path d="M57 94h6l-1 18h-4z" fill="#0ea5a4"/>
+    <!-- neck -->
+    <path d="M51 74h18v15c0 4-18 4-18 0z" fill="#c98f6b"/>
+    <!-- head -->
+    <ellipse cx="60" cy="54" rx="21" ry="24" fill="#d9a07b"/>
+    <ellipse cx="38.5" cy="57" rx="3.5" ry="5.5" fill="#c98f6b"/>
+    <ellipse cx="81.5" cy="57" rx="3.5" ry="5.5" fill="#c98f6b"/>
+    <!-- hair -->
+    <path d="M38 50c-2-17 9-27 22-27 14 0 25 9 22 27-3-8-8-12-14-13-9 4-20 5-30 13z" fill="#1f1a17"/>
+    <!-- face (simple, stylised) -->
+    <path d="M49 52.5h7M64 52.5h7" stroke="#1f1a17" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="52.5" cy="58" r="2" fill="#1f1a17"/>
+    <circle cx="67.5" cy="58" r="2" fill="#1f1a17"/>
+    <path d="M60 60v6h-3" fill="none" stroke="#b07a58" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M53 70c4 3 10 3 14 0" fill="none" stroke="#8a4f3a" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

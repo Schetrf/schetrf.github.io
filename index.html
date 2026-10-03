@@ -62,6 +62,10 @@
       </nav>
 
       <div class="header-actions">
+        <button type="button" class="btn-login" data-open-login aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <span data-en="Log in">Войти</span>
+        </button>
         <div class="lang-switch" role="group" aria-label="Язык сайта / Site language">
           <button type="button" class="lang-btn" data-lang="ru" aria-pressed="true" lang="ru">RU</button>
           <button type="button" class="lang-btn" data-lang="en" aria-pressed="false" lang="en">EN</button>
@@ -84,6 +88,13 @@
           <div class="hero-cta">
             <a class="btn btn-primary" href="#contact" data-en="Submit a request">Оставить заявку</a>
             <a class="btn btn-ghost" href="#how" data-en="How it works">Как это работает</a>
+          </div>
+          <div class="hero-login">
+            <div class="hero-login-text">
+              <p class="hero-login-title"><span data-en="Personal account">Личный кабинет</span> <span class="demo-badge" data-en="DEMO">ДЕМО</span></p>
+              <p class="hero-login-sub" data-en="Log in by phone number and SMS code: registration, balance, documents.">Вход по номеру телефона и SMS-коду: регистрация, баланс, документы.</p>
+            </div>
+            <button type="button" class="btn btn-primary" data-open-login aria-haspopup="dialog" data-en="Log in">Войти</button>
           </div>
           <ul class="hero-points">
             <li data-en="Consultation in Russian and English">Консультация на русском и английском</li>
@@ -372,5 +383,36 @@
       <p class="disclaimer" data-en="The information on this website is for informational purposes only and does not constitute a public offer, legal or financial advice. Schet RF is not a bank or credit institution and does not open accounts on its own. Requirements for documents and the decision to open an account are determined by the bank and the legislation of the Russian Federation.">Информация на сайте носит ознакомительный характер и не является публичной офертой, юридической или финансовой консультацией. «Счёт РФ» не является банком или кредитной организацией и самостоятельно не открывает счета. Требования к документам и решение об открытии счёта определяются банком и законодательством Российской Федерации.</p>
     </div>
   </footer>
+  <!-- DEMO login (client-side only, no backend) -->
+  <div class="modal" id="login-modal" hidden>
+    <div class="modal-backdrop" data-close-login></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="login-title">
+      <button type="button" class="modal-close" data-close-login aria-label="Закрыть" data-en-aria-label="Close">×</button>
+      <p class="demo-badge demo-badge-lg" data-en="DEMO prototype — no real SMS is sent">ДЕМО-прототип — SMS не отправляется</p>
+      <h2 id="login-title" data-en="Log in to your account">Вход в личный кабинет</h2>
+
+      <form id="login-phone-form" novalidate>
+        <div class="field">
+          <label for="login-phone" data-en="Phone number">Номер телефона</label>
+          <input id="login-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" maxlength="18">
+          <p class="field-error" id="login-phone-err" aria-live="polite"></p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" data-en="Get code">Получить код</button>
+      </form>
+
+      <form id="login-code-form" novalidate hidden>
+        <p class="login-sent"><span data-en="Code sent to">Код отправлен на</span> <strong id="login-phone-echo"></strong></p>
+        <p class="demo-hint" role="status"><strong data-en="Demo: code 1234">Демо: код 1234</strong></p>
+        <div class="field">
+          <label for="login-code" data-en="SMS code">Код из SMS</label>
+          <input id="login-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4}" maxlength="4" placeholder="••••" class="code-input">
+          <p class="field-error" id="login-code-err" aria-live="polite"></p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" data-en="Log in">Войти</button>
+        <button type="button" class="link-btn" id="login-back" data-en="Change number">Изменить номер</button>
+      </form>
+    </div>
+  </div>
+  <script src="login.js" defer></script>
 </body>
 </html>
