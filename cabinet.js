@@ -6,6 +6,7 @@
   var KEYS = {
     session: 'schetrf-demo-session',
     topups: 'schetrf-demo-topups',     // user top-ups added via the modal
+    transfers: 'schetrf-demo-transfers', // demo outgoing transfers (debits)
     regExpired: 'schetrf-demo-reg-expired',
     flight: 'schetrf-demo-flight'
   };
@@ -128,6 +129,9 @@
     });
     load(KEYS.topups, []).forEach(function (t) {
       list.push({ date: new Date(t.at), desc: t.desc, debit: 0, credit: +t.amount });
+    });
+    load(KEYS.transfers, []).forEach(function (t) {
+      list.push({ date: new Date(t.at), desc: t.desc, debit: +t.amount, credit: 0 });
     });
     list.sort(function (a, b) { return a.date - b.date; });
     var bal = OPENING_BALANCE;
@@ -339,6 +343,167 @@
     });
   }
 
+  /* ---------- DEMO interbank transfer (no money is sent) ---------- */
+  var DEMO_SMS = '1234';
+  var trMethod = 'phone', trPending = null, transferEnter = function () {};
+
+  function luhnOk(d) {
+    var sum = 0, dbl = false;
+    for (var i = d.length - 1; i >= 0; i--) {
+      var n = +d.charAt(i);
+      if (dbl) { n *= 2; if (n > 9) n -= 9; }
+      sum += n; dbl = !dbl;
+    }
+    return sum % 10 === 0;
+  }
+  function phoneDigits(v) {
+    var d = String(v || '').replace(/\D/g, '');
+    if (d.charAt(0) === '8' || d.charAt(0) === '7') d = d.slice(1);
+    return d.slice(0, 10);
+  }
+  function fmtPhone(d) {
+    var out = '+7';
+    if (d.length) out += ' (' + d.slice(0, 3);
+    if (d.length >= 3) out += ')';
+    if (d.length > 3) out += ' ' + d.slice(3, 6);
+    if (d.length > 6) out += '-' + d.slice(6, 8);
+    if (d.length > 8) out += '-' + d.slice(8, 10);
+    return out;
+  }
+
+  function initTransfer() {
+    var steps = { form: $('tr-step-form'), confirm: $('tr-step-confirm'), sms: $('tr-step-sms'), done: $('tr-step-done') };
+    var tabs = document.querySelectorAll('#view-transfer [role="tab"]');
+    function show(step) {
+      Object.keys(steps).forEach(function (k) { steps[k].hidden = k !== step; });
+      window.scrollTo(0, 0);
+    }
+    function err(id, msg) {
+      var e = $(id + '-err'); if (e) e.textContent = msg || '';
+      var i = $(id); if (i) i.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      return !msg;
+    }
+    function selectTab(name, focus) {
+      trMethod = name;
+      tabs.forEach(function (t) {
+        var on = t.dataset.tab === name;
+        t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      document.querySelectorAll('#tr-form [data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== name; });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { selectTab(t.dataset.tab); });
+      t.addEventListener('keydown', function (e) {
+        var k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!k) return;
+        e.preventDefault();
+        selectTab(tabs[(i + k + tabs.length) % tabs.length].dataset.tab, true);
+      });
+    });
+
+    transferEnter = function () {
+      $('tr-available').textContent = money(currentBalance());
+      if (!steps.done.hidden) { resetForm(); show('form'); }
+    };
+    function resetForm() {
+      $('tr-form').reset(); trPending = null;
+      document.querySelectorAll('#view-transfer .field-error').forEach(function (e) { e.textContent = ''; });
+      document.querySelectorAll('#view-transfer [aria-invalid]').forEach(function (e) { e.setAttribute('aria-invalid', 'false'); });
+      $('tr-available').textContent = money(currentBalance());
+    }
+
+    // input masks
+    var phone = $('tr-phone');
+    phone.addEventListener('focus', function () { if (!phone.value) phone.value = '+7 '; });
+    phone.addEventListener('input', function () { phone.value = fmtPhone(phoneDigits(phone.value)); });
+    var card = $('tr-card');
+    card.addEventListener('input', function () {
+      var d = card.value.replace(/\D/g, '').slice(0, 19);
+      card.value = d.replace(/(\d{4})(?=\d)/g, '$1 ');
+    });
+    ['tr-bik', 'tr-acc'].forEach(function (id) {
+      var el = $(id), max = id === 'tr-bik' ? 9 : 20;
+      el.addEventListener('input', function () { el.value = el.value.replace(/\D/g, '').slice(0, max); });
+    });
+
+    $('tr-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ok = true, first = null, to = '', desc = '', rows = [];
+      function check(id, msg) { var good = err(id, msg); if (!good) { ok = false; first = first || $(id); } }
+      if (trMethod === 'phone') {
+        var pd = phoneDigits(phone.value), bank = $('tr-bank').value;
+        check('tr-phone', pd.length !== 10 ? 'Введите номер полностью: +7 и 10 цифр.' : '');
+        check('tr-bank', !bank ? 'Выберите банк получателя.' : '');
+        to = fmtPhone(pd) + ', ' + bank;
+        desc = 'Перевод по номеру телефона ' + fmtPhone(pd).slice(0, 8) + ' ***-**-' + pd.slice(8) + ', ' + bank + ' (демо)';
+        rows = [['Способ', 'По номеру телефона'], ['Получатель', fmtPhone(pd)], ['Банк', bank]];
+      } else if (trMethod === 'card') {
+        var cd = card.value.replace(/\D/g, '');
+        check('tr-card', cd.length < 16 || cd.length > 19 ? 'Номер карты — от 16 до 19 цифр.' : !luhnOk(cd) ? 'Номер карты введён с ошибкой (не прошёл проверку Луна).' : '');
+        to = 'карта •••• ' + cd.slice(-4);
+        desc = 'Перевод на карту •••• ' + cd.slice(-4) + ' (демо)';
+        rows = [['Способ', 'По номеру карты'], ['Карта получателя', cd.slice(0, 4) + ' •••• •••• ' + cd.slice(-4)]];
+      } else {
+        var fio = $('tr-fio').value.trim().replace(/\s+/g, ' '), bik = $('tr-bik').value, acc = $('tr-acc').value, purpose = $('tr-purpose').value.trim();
+        check('tr-fio', !/^[A-Za-zА-Яа-яЁё'\-]+( [A-Za-zА-Яа-яЁё'\-]+){1,3}$/.test(fio) ? 'Укажите фамилию и имя (и отчество) получателя буквами.' : '');
+        check('tr-bik', !/^\d{9}$/.test(bik) ? 'БИК — ровно 9 цифр.' : '');
+        check('tr-acc', !/^\d{20}$/.test(acc) ? 'Номер счёта — ровно 20 цифр.' : '');
+        check('tr-purpose', purpose.length < 3 ? 'Укажите назначение платежа.' : '');
+        var parts = fio.split(' ');
+        var shortName = parts[0] + (parts[1] ? ' ' + parts[1].charAt(0) + '.' : '') + (parts[2] ? ' ' + parts[2].charAt(0) + '.' : '');
+        to = shortName + ', счёт •••• ' + acc.slice(-4);
+        desc = 'Перевод по реквизитам: ' + shortName + ', счёт •••• ' + acc.slice(-4) + ' (демо)';
+        rows = [['Способ', 'По реквизитам'], ['Получатель', fio], ['БИК', bik], ['Счёт', acc], ['Назначение', purpose]];
+      }
+      var amt = parseFloat(String($('tr-amount').value).replace(',', '.'));
+      var bal = currentBalance();
+      check('tr-amount', !isFinite(amt) || amt < 1 ? 'Введите сумму от 1 ₽.' : Math.round(amt * 100) / 100 > bal ? 'Недостаточно средств: доступно ' + money(bal) + '.' : '');
+      if (!ok) { first.focus(); return; }
+      amt = Math.round(amt * 100) / 100;
+      trPending = { amount: amt, desc: desc, to: to };
+      rows.push(['Сумма', money(amt)], ['Комиссия (демо)', money(0)], ['Итого к списанию', money(amt)]);
+      var dl = $('tr-summary'); dl.textContent = '';
+      rows.forEach(function (r, i) {
+        var d = el('div', i === rows.length - 1 ? 'total' : '');
+        d.appendChild(el('dt', '', r[0])); d.appendChild(el('dd', '', r[1])); dl.appendChild(d);
+      });
+      $('tr-confirm-err').textContent = '';
+      show('confirm');
+    });
+
+    $('tr-edit').addEventListener('click', function () { show('form'); });
+    $('tr-confirm').addEventListener('click', function () {
+      if (!trPending) { show('form'); return; }
+      if (trPending.amount > currentBalance()) { $('tr-confirm-err').textContent = 'Недостаточно средств.'; return; }
+      $('tr-sms-phone').textContent = session.phone || '';
+      $('tr-code').value = ''; err('tr-code', '');
+      show('sms'); $('tr-code').focus();
+    });
+    $('tr-sms-back').addEventListener('click', function () { show('confirm'); });
+    $('tr-code').addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 4);
+      if ($('tr-code-err').textContent) err('tr-code', '');
+    });
+    $('tr-sms-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = $('tr-code').value;
+      if (v.length !== 4) { err('tr-code', 'Введите 4 цифры кода.'); return; }
+      if (v !== DEMO_SMS) { err('tr-code', 'Неверный код. Для демо введите 1234.'); $('tr-code').select(); return; }
+      if (!trPending || trPending.amount > currentBalance()) { err('tr-code', 'Недостаточно средств — перевод отменён.'); return; }
+      var list = load(KEYS.transfers, []);
+      list.push({ at: new Date().toISOString(), amount: trPending.amount, desc: trPending.desc });
+      save(KEYS.transfers, list);
+      $('tr-done-amount').textContent = '−' + money(trPending.amount);
+      $('tr-done-to').textContent = 'Получатель: ' + trPending.to;
+      $('tr-done-balance').textContent = money(currentBalance());
+      renderBalance(); renderStatement();
+      trPending = null;
+      show('done'); steps.done.focus();
+    });
+    $('tr-new').addEventListener('click', function () { resetForm(); show('form'); });
+  }
+
   /* ---------- passport ---------- */
   function renderPassport() {
     var rows = [
@@ -391,7 +556,7 @@
   }
 
   /* ---------- routing (hash views) ---------- */
-  var VIEWS = ['home', 'history', 'passport', 'offices'];
+  var VIEWS = ['home', 'history', 'transfer', 'passport', 'offices'];
   function route() {
     var v = (location.hash || '#home').slice(1);
     if (VIEWS.indexOf(v) === -1) v = 'home';
@@ -400,6 +565,7 @@
       if (a.dataset.viewLink === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
     if (v === 'history') renderStatement();
+    if (v === 'transfer') transferEnter();
     if (v === 'home') { renderReg(); renderBalance(); }
     window.scrollTo(0, 0);
   }
@@ -413,13 +579,13 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     renderProfile(); renderReg(); renderBalance(); renderStatement(); renderPassport(); renderOffices();
-    initFlightForm(); initTopup();
+    initFlightForm(); initTopup(); initTransfer();
     $('logout').addEventListener('click', function () {
       localStorage.removeItem(KEYS.session);
       location.replace('index.html');
     });
     $('reset-demo').addEventListener('click', function () {
-      [KEYS.topups, KEYS.regExpired, KEYS.flight].forEach(function (k) { localStorage.removeItem(k); });
+      [KEYS.topups, KEYS.transfers, KEYS.regExpired, KEYS.flight].forEach(function (k) { localStorage.removeItem(k); });
       renderReg(); renderBalance(); renderStatement();
       toast('Демо-данные сброшены');
     });
