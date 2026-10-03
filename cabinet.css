@@ -226,3 +226,74 @@ body.cab { background: var(--c-bg-alt); padding-bottom: calc(76px + env(safe-are
 .tr-done-amount { font-size: 2rem; font-weight: 800; margin: 4px 0; font-variant-numeric: tabular-nums; }
 .tr-success .demo-banner-inline { margin: 12px 0; text-align: left; }
 .tr-step[hidden] { display: none; }
+
+/* account + visual card (DEMO) */
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-variant-numeric: tabular-nums; }
+.copy-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; }
+.copy-row .v { font-size: .9rem; letter-spacing: 0; white-space: nowrap; }
+.copy-row > div { min-width: 0; }
+.copy-btn { flex: 0 0 auto; border: 1px solid #c7d4f5; background: #f5f8ff; color: var(--c-primary); font: inherit; font-size: .82rem; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; min-height: 38px; }
+.copy-btn:hover { border-color: var(--c-primary); }
+.bank-card-wrap { perspective: 1200px; margin: 8px 0 4px; }
+.bank-card { position: relative; width: 100%; max-width: 380px; margin: 0 auto; aspect-ratio: 85.6 / 54; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.2,.7,.2,1); cursor: pointer; }
+.bank-card.is-flipped { transform: rotateY(180deg); }
+.bc-face { position: absolute; inset: 0; border-radius: 16px; padding: 6% 7%; color: #fff; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 18px 40px -18px rgba(15,23,42,.55); display: flex; flex-direction: column; justify-content: space-between;
+  background: radial-gradient(120% 90% at 100% 0%, rgba(45,212,191,.55), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(99,102,241,.55), transparent 60%), linear-gradient(135deg, #0b1f4d 0%, #1d4ed8 55%, #0e7490 100%); }
+.bc-face::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 10px); pointer-events: none; }
+.bc-back { transform: rotateY(180deg); padding: 7% 0 6%; justify-content: flex-start; gap: 8%; }
+.bc-top { display: flex; justify-content: space-between; align-items: baseline; }
+.bc-brand { font-weight: 800; font-size: clamp(.95rem, 4.4vw, 1.15rem); letter-spacing: .02em; }
+.bc-digital { font-weight: 800; font-size: clamp(.8rem, 3.6vw, .95rem); padding: 2px 8px; border: 1.5px solid rgba(255,255,255,.7); border-radius: 999px; }
+.bc-mid { display: flex; align-items: center; gap: 10px; }
+.bc-chip { width: 15%; aspect-ratio: 1.3; border-radius: 6px; background: linear-gradient(135deg, #fde68a, #d4a017 55%, #fbbf24); box-shadow: inset 0 0 0 1px rgba(120,80,0,.35); position: relative; }
+.bc-chip::before { content: ""; position: absolute; inset: 22% 30%; border: 1px solid rgba(120,80,0,.45); border-radius: 3px; }
+.bc-contactless { width: 9%; min-width: 22px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; transform: rotate(0deg); opacity: .9; }
+.bc-demo { margin-left: auto; font-size: .62rem; font-weight: 900; letter-spacing: .14em; background: rgba(220,38,38,.85); padding: 2px 7px; border-radius: 5px; }
+.bc-number { font-size: clamp(1.05rem, 5.4vw, 1.4rem); letter-spacing: .1em; text-shadow: 0 1px 2px rgba(0,0,0,.35); white-space: nowrap; }
+.bc-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.bc-bottom > div { display: grid; }
+.bc-label { font-size: .55rem; text-transform: uppercase; letter-spacing: .12em; opacity: .75; }
+.bc-holder { font-weight: 700; letter-spacing: .08em; font-size: clamp(.78rem, 3.6vw, .92rem); }
+.bc-exp-box { text-align: right; }
+.bc-exp { font-weight: 700; font-size: clamp(.85rem, 3.8vw, 1rem); }
+.bank-card.is-expired .bc-exp { color: #fecaca; text-decoration: line-through; }
+.bc-stripe { height: 20%; background: #0b0f19; }
+.bc-sign-row { display: flex; align-items: center; gap: 8px; padding: 0 7%; }
+.bc-sign { flex: 1; height: 34px; border-radius: 4px; background: repeating-linear-gradient(-45deg, #f8fafc 0 6px, #e2e8f0 6px 12px); color: #94a3b8; font-size: .6rem; font-weight: 800; letter-spacing: .1em; display: flex; align-items: center; padding: 0 8px; white-space: nowrap; overflow: hidden; }
+.bc-cvc-box { display: grid; text-align: center; background: #fff; color: #0f172a; border-radius: 4px; padding: 2px 10px; min-width: 64px; }
+.bc-cvc-box .bc-label { opacity: .6; }
+.bc-cvc { font-weight: 800; font-size: 1rem; letter-spacing: .1em; }
+.bc-back-note { margin: auto 7% 0; font-size: .62rem; line-height: 1.35; opacity: .85; }
+.card-controls { display: flex; justify-content: center; margin: 8px 0 4px; }
+.btn-sm { min-height: 38px; padding: 6px 14px; font-size: .85rem; border-radius: 10px; }
+.card-details { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--c-border); }
+.card-details > div { padding-top: 8px; }
+.cvc-line { display: flex; align-items: center; gap: 8px; }
+.eye-btn { width: 34px; height: 34px; display: inline-grid; place-items: center; border: 1px solid var(--c-border); border-radius: 9px; background: #fff; cursor: pointer; padding: 0; }
+.eye-btn svg { width: 20px; height: 20px; fill: none; stroke: var(--c-muted); stroke-width: 2; stroke-linecap: round; }
+.eye-btn[aria-pressed="true"] .eye-slash { display: none; }
+.card-caption { margin: 6px 0 0; font-size: .82rem; color: var(--c-muted); }
+.card-caption.is-expired { color: var(--c-danger); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .bank-card { transition: none; } }
+/* mini card thumbnail */
+.mini-card-btn { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 6px; padding: 10px; border: 1px solid var(--c-border); border-radius: 14px; background: var(--c-bg-alt); font: inherit; color: var(--c-text); text-align: left; cursor: pointer; }
+.mini-card-btn:hover { border-color: #c7d4f5; }
+.mini-card { position: relative; flex: 0 0 112px; width: 112px; aspect-ratio: 85.6 / 54; border-radius: 9px; overflow: hidden; color: #fff; box-shadow: 0 8px 18px -10px rgba(15,23,42,.6);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(45,212,191,.55), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(99,102,241,.55), transparent 60%), linear-gradient(135deg, #0b1f4d 0%, #1d4ed8 55%, #0e7490 100%); }
+.mini-drub { position: absolute; right: 6px; top: 6px; width: 44px; height: 44px; color: rgba(255,255,255,.92); }
+.mini-chip { position: absolute; left: 8px; top: 24px; width: 16px; height: 12px; border-radius: 3px; background: linear-gradient(135deg, #fde68a, #d4a017); }
+.mini-demo { position: absolute; left: 6px; top: 5px; font-size: .45rem; font-weight: 900; letter-spacing: .1em; background: rgba(220,38,38,.85); padding: 1px 4px; border-radius: 3px; }
+.mini-last { position: absolute; left: 8px; bottom: 5px; font-size: .62rem; letter-spacing: .08em; }
+.mini-text { display: grid; gap: 2px; min-width: 0; }
+.mc-title { font-weight: 800; font-size: .95rem; color: var(--c-text); }
+.mc-title .mono { white-space: nowrap; }
+.mini-sub { font-size: .78rem; color: var(--c-muted); }
+.mini-open { font-size: .82rem; font-weight: 700; color: var(--c-primary); }
+/* big card digital ruble graphic */
+.bc-drub-bg { position: absolute; right: -10%; bottom: -28%; width: 72%; aspect-ratio: 1; color: rgba(255,255,255,.09); pointer-events: none; }
+.bc-drub { position: absolute; right: 7%; top: 25%; width: 19%; height: auto; aspect-ratio: 1; color: rgba(255,255,255,.88); filter: drop-shadow(0 0 6px rgba(94,234,212,.55)); pointer-events: none; }
+.bc-front > *:not(.bc-drub):not(.bc-drub-bg) { position: relative; z-index: 1; }
+.bc-mid .bc-demo { margin-left: 8px; }
+.card-dialog { max-width: 480px; }
+.card-dialog h2 { margin-bottom: 12px; }
+.card-dialog .bank-card { max-width: 420px; }

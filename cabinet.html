@@ -126,7 +126,7 @@
       <article class="card balance-card" aria-labelledby="bal-title">
         <div class="card-head">
           <h2 id="bal-title">Баланс счёта</h2>
-          <span class="acc-no">RUB •••• 4821</span>
+          <span class="acc-no">RUB · демо</span>
         </div>
         <p class="balance" id="balance" aria-live="polite"></p>
         <div class="balance-actions">
@@ -138,6 +138,30 @@
         <ul class="mini-tx" id="mini-tx"></ul>
       </article>
 
+      <!-- Account + card (DEMO, fictitious numbers) -->
+      <article class="card account-card" aria-labelledby="acc-title">
+        <div class="card-head">
+          <h2 id="acc-title">Счёт и карта</h2>
+          <span class="demo-badge">Демо</span>
+        </div>
+        <div class="copy-row">
+          <div><p class="k">Номер счёта</p><p class="v mono" id="acc-number"></p></div>
+          <button type="button" class="copy-btn" data-copy="account" aria-label="Копировать номер счёта">Копировать</button>
+        </div>
+        <button type="button" class="mini-card-btn" id="open-card" aria-haspopup="dialog" aria-label="Открыть карту">
+          <span class="mini-card" aria-hidden="true">
+            <svg class="drub mini-drub" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#drub-symbol"/></svg>
+            <span class="mini-chip"></span>
+            <span class="mini-demo">DEMO</span>
+            <span class="mini-last mono" id="mini-last"></span>
+          </span>
+          <span class="mini-text">
+            <span class="mc-title">Карта Digital ₽ <span class="mono" id="mini-mask"></span></span>
+            <span class="mini-sub" id="mini-sub"></span>
+            <span class="mini-open">Открыть карту →</span>
+          </span>
+        </button>
+      </article>
       <p class="reset-row"><button type="button" class="link-btn" id="reset-demo">Сбросить демо-данные</button></p>
     </section>
 
@@ -150,7 +174,7 @@
       <article class="card statement">
         <div class="st-head">
           <div><p class="k">Владелец</p><p class="v" id="st-owner"></p></div>
-          <div><p class="k">Счёт</p><p class="v">40817 810 •••• •••• 4821 (демо)</p></div>
+          <div><p class="k">Счёт</p><p class="v" id="st-acc"></p></div>
           <div><p class="k">Период</p><p class="v" id="st-period"></p></div>
           <div><p class="k">Валюта</p><p class="v">RUB</p></div>
         </div>
@@ -373,6 +397,95 @@
       </form>
     </div>
   </div>
+
+  <!-- Large card modal (DEMO) -->
+  <div class="modal" id="card-modal" hidden>
+    <div class="modal-backdrop" data-close-card></div>
+    <div class="modal-dialog card-dialog" role="dialog" aria-modal="true" aria-labelledby="card-modal-title">
+      <button type="button" class="modal-close" data-close-card aria-label="Закрыть">×</button>
+      <p class="demo-badge demo-badge-lg">ДЕМО — вымышленная карта, не платёжное средство</p>
+      <h2 id="card-modal-title">Карта Digital ₽</h2>
+        <div class="bank-card-wrap">
+        <div class="bank-card" id="bank-card" aria-live="polite">
+          <div class="bc-face bc-front" aria-label="Лицевая сторона демо-карты">
+            <svg class="drub bc-drub-bg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#drub-symbol"/></svg>
+              <svg class="drub bc-drub" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#drub-symbol"/></svg>
+            <div class="bc-top">
+              <span class="bc-brand">Счёт РФ</span>
+              <span class="bc-digital">Digital ₽</span>
+            </div>
+            <div class="bc-mid">
+              <span class="bc-chip" aria-hidden="true"></span>
+              <svg class="bc-contactless" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6.5a8 8 0 0 1 0 11M12 4a12 12 0 0 1 0 16M5 9a4 4 0 0 1 0 6"/></svg>
+              <span class="bc-demo">DEMO</span>
+            </div>
+            <div class="bc-number mono" id="bc-number"></div>
+            <div class="bc-bottom">
+              <div><span class="bc-label">Cardholder</span><span class="bc-holder">KARIMOV AZIZBEK</span></div>
+              <div class="bc-exp-box"><span class="bc-label">Действ. до</span><span class="bc-exp mono" id="bc-exp"></span></div>
+            </div>
+          </div>
+          <div class="bc-face bc-back" aria-label="Оборотная сторона демо-карты">
+            <div class="bc-stripe" aria-hidden="true"></div>
+            <div class="bc-sign-row">
+              <div class="bc-sign" aria-hidden="true">ОБРАЗЕЦ · SAMPLE · ОБРАЗЕЦ</div>
+              <div class="bc-cvc-box"><span class="bc-label">CVC2</span><span class="bc-cvc mono" id="bc-cvc-back">•••</span></div>
+            </div>
+            <p class="bc-back-note">DEMO — карта вымышленная, не является платёжным средством. Счёт РФ · Digital ₽</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-controls">
+        <button type="button" class="btn btn-ghost btn-sm" id="card-flip" aria-pressed="false">Перевернуть карту</button>
+      </div>
+
+      <div class="copy-row">
+        <div><p class="k">Номер карты</p><p class="v mono" id="card-number"></p></div>
+        <button type="button" class="copy-btn" data-copy="card" aria-label="Копировать номер карты">Копировать</button>
+      </div>
+      <div class="card-details">
+        <div>
+          <p class="k">CVC2</p>
+          <p class="v mono cvc-line"><span id="cvc-value">•••</span>
+            <button type="button" class="eye-btn" id="cvc-toggle" aria-pressed="false" aria-label="Показать CVC2">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="eye-open" cx="12" cy="12" r="3"/><path class="eye-slash" d="M4 4l16 16"/></svg>
+            </button>
+          </p>
+        </div>
+        <div>
+          <p class="k">Срок действия</p>
+          <p class="v mono" id="card-exp"></p>
+        </div>
+      </div>
+      <p class="card-caption" id="card-caption">Действует до окончания срока пребывания</p>
+    </div>
+  </div>
+
+  <!-- Digital ruble mark: original stylised "₽" in circuit/pixel style (not an official logo) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="drub-symbol" viewBox="0 0 100 100">
+      <g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M36 86V16h22a19 19 0 0 1 0 38H24"/>
+        <path d="M24 70h38"/>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+        <path d="M77 35h12v-14"/>
+        <path d="M58 16V6h14"/>
+        <path d="M62 70h10l8 8h10"/>
+        <path d="M36 86v8H22"/>
+        <path d="M24 54H12v18"/>
+      </g>
+      <g fill="currentColor">
+        <circle cx="89" cy="21" r="3.6"/><circle cx="72" cy="6" r="3.6"/><circle cx="90" cy="78" r="3.6"/>
+        <circle cx="22" cy="94" r="3.6"/><circle cx="12" cy="72" r="3.6"/>
+        <rect x="44" y="27" width="5" height="5" rx="1" opacity=".7"/><rect x="51" y="27" width="5" height="5" rx="1" opacity=".45"/>
+        <rect x="44" y="34" width="5" height="5" rx="1" opacity=".45"/><rect x="58" y="34" width="5" height="5" rx="1" opacity=".7"/>
+        <rect x="51" y="41" width="5" height="5" rx="1" opacity=".55"/>
+        <rect x="80" y="48" width="4" height="4" rx="1" opacity=".6"/><rect x="86" y="54" width="4" height="4" rx="1" opacity=".4"/>
+        <rect x="6" y="36" width="4" height="4" rx="1" opacity=".5"/><rect x="12" y="30" width="4" height="4" rx="1" opacity=".35"/>
+      </g>
+    </symbol>
+  </svg>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 </body>

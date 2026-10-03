@@ -21,6 +21,9 @@
     docNo: 'DEMO 000000', issued: '20.05.2021', expires: '19.05.2031'
   };
 
+  /* Fictitious demo account / card (not real, not issued by any bank) */
+  var ACCOUNT = { number: '40820810000000004821', card: '2200000000004821', cvc: '123' };
+
   var REG_PERIOD_DAYS = 90;      // demo registration period length
   var REG_DAYS_LEFT_DEFAULT = 25; // end date = today + 25 days (computed live)
   var OPENING_BALANCE = 3500;
@@ -150,10 +153,16 @@
   }
 
   /* ---------- render: registration ---------- */
+  /* Single source of truth for the registration (срок пребывания) end date */
+  function regEndDate() {
+    var expired = !!load(KEYS.regExpired, false);
+    return addDays(startOfDay(new Date()), expired ? -3 : REG_DAYS_LEFT_DEFAULT);
+  }
+
   function renderReg() {
     var expired = !!load(KEYS.regExpired, false);
     var today = startOfDay(new Date());
-    var end = addDays(today, expired ? -3 : REG_DAYS_LEFT_DEFAULT);
+    var end = regEndDate();
     var left = dayDiff(end, today);
     var card = $('reg-card');
     var state = left < 0 ? 'expired' : left <= 7 ? 'red' : left <= 30 ? 'amber' : 'green';
@@ -182,6 +191,77 @@
     $('reg-expired').hidden = state !== 'expired';
     $('reg-toggle').textContent = expired ? 'Демо: вернуть действующую регистрацию' : 'Демо: регистрация истекла';
     renderFlight();
+    renderCard();
+  }
+
+  /* ---------- account + visual card ---------- */
+  function fmtAccount(n) { return n.slice(0, 5) + ' ' + n.slice(5, 8) + ' ' + n.slice(8, 9) + ' ' + n.slice(9, 13) + ' ' + n.slice(13); }
+  function fmtCard(n) { return n.replace(/(\d{4})(?=\d)/g, '$1 '); }
+  function renderCard() {
+    var end = regEndDate();
+    var mmyy = pad(end.getMonth() + 1) + '/' + String(end.getFullYear()).slice(-2);
+    var expired = dayDiff(end, new Date()) < 0;
+    $('acc-number').textContent = fmtAccount(ACCOUNT.number);
+    $('bc-number').textContent = fmtCard(ACCOUNT.card);
+    $('card-number').textContent = fmtCard(ACCOUNT.card);
+    $('bc-exp').textContent = mmyy;
+    $('card-exp').textContent = mmyy + ' (' + fmtDate(end) + ')';
+    $('bank-card').classList.toggle('is-expired', expired);
+    $('card-caption').textContent = expired ? 'Срок пребывания истёк — карта недействительна (демо)' : 'Действует до окончания срока пребывания';
+    $('card-caption').classList.toggle('is-expired', expired);
+    var st = $('st-acc'); if (st) st.textContent = fmtAccount(ACCOUNT.number) + ' (демо)';
+    $('mini-last').textContent = '•• ' + ACCOUNT.card.slice(-4);
+    $('mini-mask').textContent = '•• ' + ACCOUNT.card.slice(-4);
+    $('mini-sub').textContent = expired ? 'Срок пребывания истёк — карта недействительна' : 'Действует до ' + mmyy + ' — до окончания срока пребывания';
+  }
+  function copyText(text) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+    }
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).catch(fallback);
+    return fallback();
+  }
+  function initCard() {
+    document.querySelectorAll('[data-copy]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.dataset.copy === 'account' ? ACCOUNT.number : ACCOUNT.card;
+        copyText(v).then(function () { toast('Скопировано'); }, function () { toast('Не удалось скопировать'); });
+      });
+    });
+    var shown = false;
+    $('cvc-toggle').addEventListener('click', function () {
+      shown = !shown;
+      var v = shown ? ACCOUNT.cvc : '•••';
+      $('cvc-value').textContent = v; $('bc-cvc-back').textContent = v;
+      this.setAttribute('aria-pressed', String(shown));
+      this.setAttribute('aria-label', shown ? 'Скрыть CVC2' : 'Показать CVC2');
+    });
+    $('card-flip').addEventListener('click', function () {
+      var flipped = $('bank-card').classList.toggle('is-flipped');
+      this.setAttribute('aria-pressed', String(flipped));
+      this.textContent = flipped ? 'Показать лицевую сторону' : 'Перевернуть карту';
+    });
+    $('bank-card').addEventListener('click', function () { $('card-flip').click(); });
+
+    // mini card -> large card modal
+    var modal = $('card-modal'), lastFocus = null;
+    function openModal() {
+      lastFocus = document.activeElement;
+      modal.hidden = false; document.body.classList.add('modal-open');
+      setTimeout(function () { $('card-flip').focus(); }, 30);
+    }
+    function closeModal() {
+      modal.hidden = true; document.body.classList.remove('modal-open');
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    $('open-card').addEventListener('click', openModal);
+    modal.querySelectorAll('[data-close-card]').forEach(function (b) { b.addEventListener('click', closeModal); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
   }
 
   function renderFlight() {
@@ -579,7 +659,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     renderProfile(); renderReg(); renderBalance(); renderStatement(); renderPassport(); renderOffices();
-    initFlightForm(); initTopup(); initTransfer();
+    initFlightForm(); initTopup(); initTransfer(); initCard(); renderCard();
     $('logout').addEventListener('click', function () {
       localStorage.removeItem(KEYS.session);
       location.replace('index.html');
